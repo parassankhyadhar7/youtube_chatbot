@@ -1,0 +1,6 @@
+youtube-transcript-api
+langchain_classic
+langchain-chroma
+langchain-qdrant
+langchain-openai 
+streamlit
