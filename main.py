@@ -19,9 +19,32 @@ load_dotenv()
 embedding_model = OpenAIEmbeddings()
 
 
+# def get_video_id(url):
+#     parsed_url = urlparse(url)
+#     return parse_qs(parsed_url.query)["v"][0]
+
 def get_video_id(url):
-    parsed_url = urlparse(url)
-    return parse_qs(parsed_url.query)["v"][0]
+    parsed = urlparse(url)
+
+    if parsed.hostname == "youtu.be":
+        return parsed.path[1:]
+
+    if parsed.hostname in (
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com"
+    ):
+
+        if parsed.path == "/watch":
+            return parse_qs(parsed.query)["v"][0]
+
+        if parsed.path.startswith("/shorts/"):
+            return parsed.path.split("/")[2]
+
+        if parsed.path.startswith("/embed/"):
+            return parsed.path.split("/")[2]
+
+    raise ValueError(f"Unsupported YouTube URL: {url}")
 
 
 def get_transcript(url, language):
