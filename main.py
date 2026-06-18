@@ -1,10 +1,11 @@
 from urllib.parse import urlparse, parse_qs
 from youtube_transcript_api import YouTubeTranscriptApi
 from langchain_classic.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+#from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from langchain_core.prompts import PromptTemplate
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint, HuggingFaceEndpointEmbeddings
 from langchain_core.runnables import (
     RunnableParallel,
     RunnablePassthrough,
@@ -16,7 +17,11 @@ import os
 
 load_dotenv()
 
-embedding_model = OpenAIEmbeddings()
+#embedding_model = OpenAIEmbeddings()
+
+embedding_model = HuggingFaceEndpointEmbeddings(
+    model="sentence-transformers/all-mpnet-base-v2"
+)
 
 
 # def get_video_id(url):
@@ -139,7 +144,9 @@ def ask_question(youtube_url, question, language):
         You are a helpful assistant.
 
         Answer only from the provided context.
-        If the context is insufficient,
+        If the context is insufficient, but give the elavurated answer.
+        Don't give flase info.
+        Don't be rude.
         just say you don't know.
 
         Context:
@@ -151,7 +158,15 @@ def ask_question(youtube_url, question, language):
         input_variables=["context", "question"]
     )
 
-    model = ChatOpenAI()
+
+    # model = ChatOpenAI()
+    llm = HuggingFaceEndpoint(
+    repo_id="MiniMaxAI/MiniMax-M2.5",
+    task="text-generation"
+    )
+
+    model = ChatHuggingFace(llm=llm)
+    
     parser = StrOutputParser()
 
     parallel_chain = RunnableParallel({

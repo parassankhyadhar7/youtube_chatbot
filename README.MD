@@ -1,27 +1,32 @@
 # 🎥 YouTube RAG Chatbot
 
-A Retrieval-Augmented Generation (RAG) application that allows users to ask questions about YouTube videos using their transcripts.
+A Retrieval-Augmented Generation (RAG) application that allows users to chat with YouTube videos using their transcripts.
 
 The application:
 
 - Extracts transcripts from YouTube videos
+- Supports both standard YouTube URLs and shared URLs
+- Supports English and Hindi transcripts
 - Splits transcripts into chunks
-- Creates embeddings using OpenAI
-- Stores embeddings in Qdrant Vector Database
-- Retrieves relevant transcript chunks
-- Uses an LLM to answer questions based only on the retrieved context
-- Provides a simple Streamlit user interface
+- Generates embeddings using Hugging Face Embedding Models
+- Stores vectors in Qdrant Vector Database
+- Retrieves relevant transcript chunks using semantic search
+- Uses a Hugging Face LLM to answer questions based on retrieved context
+- Provides a Streamlit-based web interface
 
 ---
 
 ## Features
 
 - Ask questions about any YouTube video with available transcripts
-- Supports English and Hindi transcripts
-- Qdrant vector storage for efficient retrieval
-- OpenAI embeddings and LLM integration
-- Streamlit-based web UI
-- Automatic collection reuse for previously processed videos
+- Support for English and Hindi transcripts
+- Support for YouTube video URLs, share URLs, Shorts URLs, and Embed URLs
+- Hugging Face Embeddings
+- Hugging Face LLM Integration
+- Qdrant Vector Database
+- Semantic Search Retrieval
+- Streamlit UI
+- Collection reuse for previously processed videos
 
 ---
 
@@ -30,9 +35,38 @@ The application:
 - Python
 - Streamlit
 - LangChain
-- OpenAI
+- Hugging Face Inference API
 - Qdrant
 - YouTube Transcript API
+
+---
+
+## Architecture
+
+```text
+YouTube Video
+      │
+      ▼
+Transcript Extraction
+      │
+      ▼
+Text Chunking
+      │
+      ▼
+Hugging Face Embeddings
+      │
+      ▼
+Qdrant Vector Store
+      │
+      ▼
+Retriever
+      │
+      ▼
+Hugging Face LLM
+      │
+      ▼
+Answer
+```
 
 ---
 
@@ -41,7 +75,7 @@ The application:
 ```text
 project/
 │
-├── main.py          # RAG logic
+├── main.py          # RAG Logic
 ├── ui.py            # Streamlit UI
 ├── requirements.txt
 ├── .env
@@ -50,36 +84,43 @@ project/
 
 ---
 
-## Installation
+## Setup
 
-### Clone Repository
+### 1. Clone Repository
 
 ```bash
 git clone <your-repository-url>
 cd <repository-name>
 ```
 
-### Create Virtual Environment
+---
+
+### 2. Create Virtual Environment
+
+#### Windows
 
 ```bash
 python -m venv venv
 ```
 
-Activate the environment:
-
-#### Windows
+Activate the virtual environment:
 
 ```bash
 venv\Scripts\activate
 ```
 
-#### Mac/Linux
+#### Linux / Mac
 
 ```bash
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-### Install Dependencies
+---
+
+### 3. Install Dependencies
+
+Install all required packages:
 
 ```bash
 pip install -r requirements.txt
@@ -87,22 +128,22 @@ pip install -r requirements.txt
 
 ---
 
-## Environment Variables
+### 4. Configure Environment Variables
 
 Create a `.env` file in the project root.
 
 ```env
-OPENAI_API_KEY=your_openai_api_key
-
 QDRANT_URL=your_qdrant_url
 QDRANT_API_KEY=your_qdrant_api_key
+
+HUGGINGFACEHUB_API_TOKEN=your_huggingface_token
 ```
 
 ---
 
-## Running the Application
+### 5. Run the Application
 
-Start the Streamlit app:
+Start the Streamlit application:
 
 ```bash
 streamlit run ui.py
@@ -116,44 +157,30 @@ http://localhost:8501
 
 ---
 
-## How It Works
+## Supported YouTube URLs
 
-### 1. Transcript Extraction
-
-The application fetches the transcript from the provided YouTube video.
-
-### 2. Text Chunking
-
-The transcript is split into smaller chunks using:
-
-- Chunk Size: 300
-- Chunk Overlap: 100
-
-### 3. Embedding Generation
-
-OpenAI Embeddings convert text chunks into vectors.
-
-### 4. Vector Storage
-
-Vectors are stored in Qdrant.
-
-If a collection for the video already exists, the application reuses it instead of recreating embeddings.
-
-### 5. Retrieval
-
-Relevant chunks are retrieved using similarity search.
-
-### 6. Answer Generation
-
-The retrieved context is passed to the LLM, which answers only from the provided context.
-
-Prompt:
+### Standard URL
 
 ```text
-You are a helpful assistant.
+https://www.youtube.com/watch?v=_GlFjR6N1Xw
+```
 
-Answer only from the provided context.
-If the context is insufficient, just say you don't know.
+### Share URL
+
+```text
+https://youtu.be/_GlFjR6N1Xw
+```
+
+### Shorts URL
+
+```text
+https://youtube.com/shorts/VIDEO_ID
+```
+
+### Embed URL
+
+```text
+https://www.youtube.com/embed/VIDEO_ID
 ```
 
 ---
@@ -162,13 +189,58 @@ If the context is insufficient, just say you don't know.
 
 ### English
 
-Fetches English transcript when available.
+Fetches the default transcript.
 
 ### Hindi
 
-Fetches Hindi transcript when available.
+Fetches Hindi transcripts when available.
 
-> Note: Availability depends on captions provided by YouTube.
+> Note: Transcript availability depends on captions provided by YouTube.
+
+---
+
+## How It Works
+
+### 1. Transcript Extraction
+
+The transcript is fetched from YouTube using the YouTube Transcript API.
+
+### 2. Text Chunking
+
+The transcript is divided into smaller chunks:
+
+- Chunk Size: 300
+- Chunk Overlap: 100
+
+### 3. Embedding Generation
+
+The application uses the following embedding model:
+
+```text
+sentence-transformers/all-mpnet-base-v2
+```
+
+to generate semantic embeddings.
+
+### 4. Vector Storage
+
+Embeddings are stored inside Qdrant.
+
+If the video has already been processed, the existing collection is reused.
+
+### 5. Retrieval
+
+Relevant transcript chunks are retrieved using similarity search.
+
+### 6. Answer Generation
+
+The retrieved context is passed to the following Hugging Face model:
+
+```text
+MiniMaxAI/MiniMax-M2.5
+```
+
+The model generates an answer based on the retrieved transcript context.
 
 ---
 
@@ -185,32 +257,42 @@ https://www.youtube.com/watch?v=xxxxxxxxxxx
 Question:
 
 ```text
-Who is the guest in this podcast?
+What is the story being discussed in the video?
 ```
 
 ### Output
 
 ```text
-The guest in the podcast is ...
+The speaker explains...
 ```
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|-----------|-------------|
+| `QDRANT_URL` | Qdrant Cloud URL |
+| `QDRANT_API_KEY` | Qdrant API Key |
+| `HUGGINGFACEHUB_API_TOKEN` | Hugging Face API Token |
 
 ---
 
 ## Future Improvements
 
-- Chat history support
 - Conversational RAG
-- Multi-video search
-- MMR retrieval
-- Contextual compression retrieval
-- Hybrid search
-- Citation support
-- Streaming responses
-- Docker deployment
-- User authentication
+- Chat History
+- Streaming Responses
+- Multi-Video Search
+- MMR Retrieval
+- Contextual Compression Retrieval
+- Hybrid Search
+- Source Citations
+- Docker Deployment
+- Authentication
 
 ---
 
 ## License
 
-This project is open-source and available under the MIT License.
+This project is open-source.

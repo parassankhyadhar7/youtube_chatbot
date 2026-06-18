@@ -16,3 +16,10 @@ python-dotenv
 
 openai
 tiktoken
+
+langchain-openrouter
+
+# Hugging Face Integration
+langchain-huggingface
+transformers
+huggingface-hub
