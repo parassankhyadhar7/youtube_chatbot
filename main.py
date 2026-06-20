@@ -17,7 +17,7 @@ import os
 
 load_dotenv()
 
-#embedding_model = OpenAIEmbeddings()
+# embedding_model = OpenAIEmbeddings()
 
 embedding_model = HuggingFaceEndpointEmbeddings(
     model="sentence-transformers/all-mpnet-base-v2"
@@ -144,10 +144,10 @@ def ask_question(youtube_url, question, language):
         You are a helpful assistant.
 
         Answer only from the provided context.
-        If the context is insufficient, but give the elavurated answer.
-        Don't give flase info.
+        Give the elaborated answer.
+        If the context is insufficient, Don't give false info. just say you don't know.
+        Also if the query is about to summarize the video and summarize it properly.
         Don't be rude.
-        just say you don't know.
 
         Context:
         {context}
@@ -161,7 +161,7 @@ def ask_question(youtube_url, question, language):
 
     # model = ChatOpenAI()
     llm = HuggingFaceEndpoint(
-    repo_id="MiniMaxAI/MiniMax-M2.5",
+    repo_id="deepseek-ai/DeepSeek-V4-Pro",
     task="text-generation"
     )
 
@@ -182,5 +182,4 @@ def ask_question(youtube_url, question, language):
         | model
         | parser
     )
-
     return chain.invoke(question)
